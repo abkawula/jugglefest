@@ -104,8 +104,11 @@ public class Circuit {
 
 	@Override
 	public String toString() {
-		return "Circuit [id=" + id + ", handEyeCoordination=" + handEyeCoordination + ", endurance=" + endurance
-				+ ", pizzazz=" + pizzazz + ", jugglers=" + jugglers + "]";
+		String s = id;
+		for (Juggler j : jugglers) {
+			s += " " + j;
+		}
+		return s;
 	}
 
 	

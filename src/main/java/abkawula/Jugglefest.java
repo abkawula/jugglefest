@@ -2,10 +2,12 @@ package abkawula;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,19 +16,19 @@ import java.util.stream.Collectors;
 
 public class Jugglefest {
 	private static final int STABILIZATION_MINIMUM = 1000;
-	
+
 	List<Circuit> circuits;
 	List<Juggler> jugglers;
 
 	public Jugglefest(List<Circuit> circuits, List<Juggler> jugglers) {
 		this.circuits = circuits;
 		this.jugglers = jugglers;
-		
+
 		System.out.println("Parsing completed successfully.  Starting assignments");
 		putJugglersInCircuits(circuits, jugglers);
-		
+
 	}
-	
+
 	public int getSolution() {
 		Circuit c1970 = circuits.stream().filter(c -> "C1970".equals(c.getId())).findFirst().get();
 		if (c1970.isFull()) {
@@ -34,16 +36,22 @@ public class Jugglefest {
 					.map(s -> Integer.parseInt(s)).mapToInt(Integer::intValue).sum();
 			return solution;
 		}
-		
+
 		throw new RuntimeException("No Solution found");
 	}
-	
+
+	public void writeToFile(PrintStream out) {
+		for (Circuit c : circuits) {
+			out.println(c);
+		}
+	}
+
 	private void putJugglersInCircuits(List<Circuit> circuits2, List<Juggler> jugglers2) {
 		LinkedList<Juggler> jugglerQueue = new LinkedList<>(jugglers);
 		Juggler j = jugglerQueue.poll();
 		while (j != null) {
 			Juggler kicked = j.findACircuit(circuits);
-//			System.out.println("Kicked: " + kicked);
+			// System.out.println("Kicked: " + kicked);
 			if (kicked != null) {
 				jugglerQueue.add(kicked);
 			}
@@ -61,11 +69,9 @@ public class Jugglefest {
 		return circuits.stream().filter(f -> !f.isFull()).collect(Collectors.toList());
 	}
 
-	// ok, so I've already got my solution, but hey, this is fun! Lets make
-	// sure the audience has a good show :-)
 	private void stuffRemainingJugglersIntoNonEmptyCircuit(LinkedList<Juggler> jugglerQueue,
 			List<Circuit> nonEmptyCircuits) {
-		
+
 		Juggler j = jugglerQueue.poll();
 		if (j != null) {
 			Circuit bestFit = nonEmptyCircuits.stream().max((c1, c2) -> j.dot(c1) - j.dot(c2)).get();
@@ -74,7 +80,6 @@ public class Jugglefest {
 			return;
 		}
 		stuffRemainingJugglersIntoNonEmptyCircuit(jugglerQueue, getNonEmptyCircuits(nonEmptyCircuits));
-		
 
 	}
 
@@ -92,6 +97,7 @@ public class Jugglefest {
 
 	public static void main(String[] args) throws Exception {
 		BufferedReader in = null;
+		PrintWriter out = null;
 		try {
 			File f = new File("jugglefest.txt");
 			in = new BufferedReader(new FileReader(f));
@@ -118,6 +124,7 @@ public class Jugglefest {
 			Circuit.setMaxNumberOfJugglers(jugglers.size() / circuits.size());
 
 			Jugglefest fest = new Jugglefest(circuits, jugglers);
+			fest.writeToFile(new PrintStream(new FileOutputStream(new File("out.txt"))));
 			System.out.println("Solution: " + fest.getSolution());
 
 		} finally {
@@ -126,6 +133,12 @@ public class Jugglefest {
 					in.close();
 				} catch (IOException io) {
 				}
+
+			if (out != null) {
+				out.flush();
+				out.close();
+			}
+
 		}
 
 	}

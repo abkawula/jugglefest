@@ -88,9 +88,12 @@ public class Juggler {
 
 	@Override
 	public String toString() {
-		return "Juggler [id=" + id + ", handEyeCoordination=" + handEyeCoordination + ", endurance=" + endurance
-				+ ", pizzazz=" + pizzazz  + ", numberOfTimesKicked="
-				+ numberOfTimesKicked + "]";
+		String s = id;
+		for (Circuit c : preferedCircuits) {
+			s += " " + c.getId() + ":" + this.dot(c);
+		}
+		
+		return s;
 	}
 	
 	
